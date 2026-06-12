@@ -114,3 +114,54 @@ Run seed script to populate the database with test data:
 ```bash
 python seed.py
 ```
+
+---
+
+## Tests
+
+Tests use **pytest** with **pytest-asyncio** and an in-memory SQLite database — no external dependencies required.
+
+### Stack
+
+| Tool | Purpose |
+|------|---------|
+| `pytest` + `pytest-asyncio` | Async test runner |
+| `httpx` + `ASGITransport` | HTTP client against the FastAPI app |
+| `SQLite` (in-memory, `StaticPool`) | Isolated test database |
+| `pytest.mark.parametrize` | Data-driven test cases |
+| `unittest.mock.patch` | Simulate DB errors in error-path tests |
+| `pytest-cov` | Coverage reporting |
+
+### Running tests
+
+```bash
+# Run all tests
+pytest
+
+# With coverage report
+pytest --cov=app --cov-report=term-missing
+```
+
+### Coverage
+
+Minimum required coverage to commit: **85%**. The CI check will fail if coverage drops below this threshold.
+
+Run with the fail-under flag to enforce it locally:
+
+```bash
+pytest --cov=app --cov-fail-under=85
+```
+
+### Test files
+
+| File | What it covers |
+|------|---------------|
+| `tests/test_genres.py` | CRUD + pagination + not-found + duplicate |
+| `tests/test_actors.py` | CRUD + pagination + field updates |
+| `tests/test_movies.py` | CRUD + M2M actor/genre assignment |
+| `tests/test_users.py` | CRUD + password hashing + duplicate username/email |
+| `tests/test_halls.py` | CRUD + hall type variants |
+| `tests/test_seats.py` | CRUD-level seat operations (no HTTP endpoint) |
+| `tests/test_sessions.py` | CRUD + filter by movie/hall + status transitions |
+| `tests/test_bookings.py` | CRUD + confirmed sets `paid_at` + multi-seat booking |
+| `tests/test_error_paths.py` | 500 responses, `SQLAlchemyError` in read/write CRUD, `NotFoundError`, `AlreadyExistsError` |

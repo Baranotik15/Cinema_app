@@ -4,20 +4,26 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from app.models.booking import Booking
+from app.models.session import Session
+from app.models.movie import Movie
 from app.schemas.booking import BookingCreate, BookingUpdate
 from app.enums import BookingStatus
 from app.exceptions import NotFoundError, DatabaseError
 
 
+def _booking_options():
+    return [
+        selectinload(Booking.session).selectinload(Session.movie).selectinload(Movie.actors),
+        selectinload(Booking.session).selectinload(Session.movie).selectinload(Movie.genres),
+        selectinload(Booking.session).selectinload(Session.hall),
+        selectinload(Booking.seat),
+    ]
+
+
 async def get_booking(db: AsyncSession, booking_id: int) -> Booking | None:
     try:
         result = await db.execute(
-            select(Booking)
-            .options(
-                selectinload(Booking.session),
-                selectinload(Booking.seat),
-            )
-            .where(Booking.id == booking_id)
+            select(Booking).options(*_booking_options()).where(Booking.id == booking_id)
         )
         return result.scalar_one_or_none()
     except SQLAlchemyError as e:
@@ -27,9 +33,7 @@ async def get_booking(db: AsyncSession, booking_id: int) -> Booking | None:
 async def get_bookings_by_user(db: AsyncSession, user_id: int) -> list[Booking]:
     try:
         result = await db.execute(
-            select(Booking)
-            .options(selectinload(Booking.session), selectinload(Booking.seat))
-            .where(Booking.user_id == user_id)
+            select(Booking).options(*_booking_options()).where(Booking.user_id == user_id)
         )
         return result.scalars().all()
     except SQLAlchemyError as e:
@@ -39,9 +43,7 @@ async def get_bookings_by_user(db: AsyncSession, user_id: int) -> list[Booking]:
 async def get_bookings_by_session(db: AsyncSession, session_id: int) -> list[Booking]:
     try:
         result = await db.execute(
-            select(Booking)
-            .options(selectinload(Booking.seat))
-            .where(Booking.session_id == session_id)
+            select(Booking).options(*_booking_options()).where(Booking.session_id == session_id)
         )
         return result.scalars().all()
     except SQLAlchemyError as e:

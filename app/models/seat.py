@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, ForeignKey, Enum
+from sqlalchemy import Column, Integer, ForeignKey, Enum, UniqueConstraint
 from sqlalchemy.orm import relationship
 from app.database import Base
 from app.enums import SeatType
@@ -6,6 +6,7 @@ from app.enums import SeatType
 
 class Seat(Base):
     __tablename__ = "seats"
+    __table_args__ = (UniqueConstraint("hall_id", "row", "number"),)
 
     id = Column(Integer, primary_key=True, index=True)
     hall_id = Column(Integer, ForeignKey("halls.id"), nullable=False)
