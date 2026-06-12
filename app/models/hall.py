@@ -10,7 +10,7 @@ class Hall(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
     capacity = Column(Integer, nullable=False)
-    hall_type = Column(Enum(HallType), default=HallType.hall_2d, nullable=False)
+    hall_type = Column(Enum(HallType, values_callable=lambda x: [e.value for e in x]), default=HallType.hall_2d, nullable=False)
 
     seats = relationship("Seat", back_populates="hall")
     sessions = relationship("Session", back_populates="hall")

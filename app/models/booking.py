@@ -11,7 +11,7 @@ class Booking(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     session_id = Column(Integer, ForeignKey("sessions.id"), nullable=False)
     seat_id = Column(Integer, ForeignKey("seats.id"), nullable=False)
-    status = Column(Enum(BookingStatus), default=BookingStatus.pending, nullable=False)
+    status = Column(Enum(BookingStatus, values_callable=lambda x: [e.value for e in x]), default=BookingStatus.pending, nullable=False)
     paid_at = Column(DateTime, nullable=True)
 
     user = relationship("User", back_populates="bookings")

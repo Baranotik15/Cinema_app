@@ -12,7 +12,7 @@ class Session(Base):
     hall_id = Column(Integer, ForeignKey("halls.id"), nullable=False)
     start_time = Column(DateTime, nullable=False)
     price = Column(Float, nullable=False)
-    status = Column(Enum(SessionStatus), default=SessionStatus.scheduled, nullable=False)
+    status = Column(Enum(SessionStatus, values_callable=lambda x: [e.value for e in x]), default=SessionStatus.scheduled, nullable=False)
 
     movie = relationship("Movie", back_populates="sessions")
     hall = relationship("Hall", back_populates="sessions")

@@ -11,7 +11,7 @@ class Seat(Base):
     hall_id = Column(Integer, ForeignKey("halls.id"), nullable=False)
     row = Column(Integer, nullable=False)
     number = Column(Integer, nullable=False)
-    seat_type = Column(Enum(SeatType), default=SeatType.standard, nullable=False)
+    seat_type = Column(Enum(SeatType, values_callable=lambda x: [e.value for e in x]), default=SeatType.standard, nullable=False)
 
     hall = relationship("Hall", back_populates="seats")
     bookings = relationship("Booking", back_populates="seat")

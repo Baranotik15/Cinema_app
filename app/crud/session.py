@@ -3,16 +3,23 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from app.models.session import Session
+from app.models.movie import Movie
 from app.schemas.session import SessionCreate, SessionUpdate
 from app.exceptions import NotFoundError, DatabaseError
+
+
+def _session_options():
+    return [
+        selectinload(Session.movie).selectinload(Movie.actors),
+        selectinload(Session.movie).selectinload(Movie.genres),
+        selectinload(Session.hall),
+    ]
 
 
 async def get_session(db: AsyncSession, session_id: int) -> Session | None:
     try:
         result = await db.execute(
-            select(Session)
-            .options(selectinload(Session.movie), selectinload(Session.hall))
-            .where(Session.id == session_id)
+            select(Session).options(*_session_options()).where(Session.id == session_id)
         )
         return result.scalar_one_or_none()
     except SQLAlchemyError as e:
@@ -22,10 +29,7 @@ async def get_session(db: AsyncSession, session_id: int) -> Session | None:
 async def get_sessions(db: AsyncSession, skip: int = 0, limit: int = 100) -> list[Session]:
     try:
         result = await db.execute(
-            select(Session)
-            .options(selectinload(Session.movie), selectinload(Session.hall))
-            .offset(skip)
-            .limit(limit)
+            select(Session).options(*_session_options()).offset(skip).limit(limit)
         )
         return result.scalars().all()
     except SQLAlchemyError as e:
@@ -35,9 +39,7 @@ async def get_sessions(db: AsyncSession, skip: int = 0, limit: int = 100) -> lis
 async def get_sessions_by_movie(db: AsyncSession, movie_id: int) -> list[Session]:
     try:
         result = await db.execute(
-            select(Session)
-            .options(selectinload(Session.hall))
-            .where(Session.movie_id == movie_id)
+            select(Session).options(*_session_options()).where(Session.movie_id == movie_id)
         )
         return result.scalars().all()
     except SQLAlchemyError as e:
@@ -47,9 +49,7 @@ async def get_sessions_by_movie(db: AsyncSession, movie_id: int) -> list[Session
 async def get_sessions_by_hall(db: AsyncSession, hall_id: int) -> list[Session]:
     try:
         result = await db.execute(
-            select(Session)
-            .options(selectinload(Session.movie))
-            .where(Session.hall_id == hall_id)
+            select(Session).options(*_session_options()).where(Session.hall_id == hall_id)
         )
         return result.scalars().all()
     except SQLAlchemyError as e:
