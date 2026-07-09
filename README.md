@@ -9,8 +9,37 @@ FastAPI-based cinema management REST API with async SQLAlchemy and SQLite (dev) 
 ## Quick Start
 
 ```bash
-poetry install
+pip install -r requirements.txt
+
+# Apply database migrations (creates all tables)
+alembic upgrade head
+
+# Start the server
 uvicorn main:app --reload
+```
+
+## Migrations
+
+Tables are managed via **Alembic** — never created automatically on startup.
+
+```bash
+# Apply all pending migrations
+alembic upgrade head
+
+# Create a new migration after changing models
+alembic revision --autogenerate -m "describe the change"
+
+# Rollback one step
+alembic downgrade -1
+
+# Show current migration state
+alembic current
+```
+
+Set `DATABASE_URL` env variable to use PostgreSQL:
+
+```bash
+DATABASE_URL=postgresql+asyncpg://user:pass@host/db alembic upgrade head
 ```
 
 Swagger UI: `http://127.0.0.1:8000/docs`
