@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Бронювання — {{ session.movie.title }}{% endblock %}
+
+{% block content %}
+<a href="/movies/{{ session.movie.id }}" style="color:var(--muted); font-size:0.9rem;">← Назад до фільму</a>
+
+<div style="margin-top:1.5rem; display:grid; grid-template-columns: 1fr 320px; gap:2rem; align-items:start;">
+
+  <!-- LEFT: Seat map -->
+  <div>
+    <h1 style="font-size:1.4rem; font-weight:800; margin-bottom:0.3rem;">{{ session.movie.title }}</h1>
+    <div style="color:var(--muted); font-size:0.9rem; margin-bottom:1.5rem;">
+      {{ session.hall.name }} &bull;
+      <span class="badge badge-dark">{{ session.hall.hall_type.value }}</span> &bull;
+      {{ session.start_time.strftime('%d.%m.%Y о %H:%M') }} &bull;
+      <span style="color:var(--accent); font-weight:700;">{{ session.price }} грн</span>
+    </div>
+
+    <div class="seat-map">
+      <div class="screen"></div>
+
+      {% if rows %}
+        {% for row_num, seats in rows.items() %}
+        <div class="seat-row">
+          <div class="row-label">{{ row_num }}</div>
+          {% for seat in seats %}
+            <div class="seat {% if seat.id in taken_seat_ids %}taken{% endif %}"
+                 data-seat-id="{{ seat.id }}"
+                 data-row="{{ seat.row }}"
+                 data-num="{{ seat.number }}"
+                 title="Ряд {{ seat.row }}, місце {{ seat.number }}">
+              {{ seat.number }}
+            </div>
+          {% endfor %}
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty">
+          <div class="empty-icon">💺</div>
+          <p>Для цього залу місця ще не додані.</p>
+        </div>
+      {% endif %}
+
+      <div class="seat-legend">
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--bg-card); border:1px solid var(--border);"></div>
+          Вільне
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--accent);"></div>
+          Обране
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#2a1a1a; border:1px solid #3a2a2a;"></div>
+          Зайняте
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Booking form -->
+  <div class="booking-panel" style="position:sticky; top:80px;">
+    <h2 style="font-size:1.1rem; font-weight:700; margin-bottom:1.2rem;">Оформлення квитка</h2>
+
+    <div id="selected-info" style="background:#1a1200; border:1px solid var(--accent); border-radius:6px; padding:0.8rem; margin-bottom:1rem; display:none;">
+      <div style="color:var(--muted); font-size:0.8rem;">Обране місце:</div>
+      <div id="selected-text" style="font-weight:700; color:var(--accent);"></div>
+    </div>
+
+    <form id="booking-form" method="post" action="/booking/{{ session.id }}/confirm">
+      <input type="hidden" name="session_id" value="{{ session.id }}">
+      <input type="hidden" name="seat_id" id="seat_id_input" value="">
+
+      <div class="form-group">
+        <label>ID користувача</label>
+        <input type="number" name="user_id" placeholder="Введіть ваш ID" required min="1">
+      </div>
+
+      <div style="border-top:1px solid var(--border); padding-top:1rem; margin-top:0.5rem;">
+        <div style="display:flex; justify-content:space-between; color:var(--muted); font-size:0.85rem; margin-bottom:0.4rem;">
+          <span>Вартість квитка:</span>
+          <span style="color:var(--text); font-weight:600;">{{ session.price }} грн</span>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width:100%; margin-top:1rem;" id="submit-btn" disabled>
+        Обери місце
+      </button>
+    </form>
+
+    {% if message %}
+    <div class="alert {% if success %}alert-success{% else %}alert-error{% endif %}" style="margin-top:1rem;">
+      {{ message }}
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  let selectedSeat = null;
+
+  document.querySelectorAll('.seat:not(.taken)').forEach(seat => {
+    seat.addEventListener('click', () => {
+      if (selectedSeat) selectedSeat.classList.remove('selected');
+      seat.classList.add('selected');
+      selectedSeat = seat;
+
+      const row = seat.dataset.row;
+      const num = seat.dataset.num;
+      const seatId = seat.dataset.seatId;
+
+      document.getElementById('seat_id_input').value = seatId;
+      document.getElementById('selected-text').textContent = `Ряд ${row}, місце ${num}`;
+      document.getElementById('selected-info').style.display = 'block';
+
+      const btn = document.getElementById('submit-btn');
+      btn.disabled = false;
+      btn.textContent = `Забронювати — {{ session.price }} грн`;
+    });
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}{{ movie.title }} — CinemaApp{% endblock %}
+
+{% block content %}
+<a href="/movies" style="color:var(--muted); font-size:0.9rem;">← Назад до фільмів</a>
+
+<div class="movie-header" style="margin-top:1.5rem;">
+  <div class="movie-poster">
+    {% if movie.poster_url %}
+      <img src="{{ movie.poster_url }}" alt="{{ movie.title }}">
+    {% else %}
+      🎬
+    {% endif %}
+  </div>
+  <div class="movie-info">
+    <h1>{{ movie.title }}</h1>
+
+    <div class="movie-stats">
+      {% if movie.rating %}
+      <div class="stat">
+        <div class="stat-value">★ {{ "%.1f"|format(movie.rating) }}</div>
+        <div class="stat-label">Рейтинг</div>
+      </div>
+      {% endif %}
+      {% if movie.duration %}
+      <div class="stat">
+        <div class="stat-value">{{ movie.duration }}</div>
+        <div class="stat-label">Хвилин</div>
+      </div>
+      {% endif %}
+      {% if movie.year %}
+      <div class="stat">
+        <div class="stat-value">{{ movie.year }}</div>
+        <div class="stat-label">Рік</div>
+      </div>
+      {% endif %}
+    </div>
+
+    {% if movie.genres %}
+    <div class="tags">
+      {% for g in movie.genres %}
+        <span class="badge badge-yellow">{{ g.name }}</span>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if movie.description %}
+    <p class="description">{{ movie.description }}</p>
+    {% endif %}
+
+    {% if movie.actors %}
+    <div style="margin-top:0.8rem;">
+      <div style="color:var(--muted); font-size:0.82rem; margin-bottom:0.4rem;">У ролях:</div>
+      <div style="display:flex; flex-wrap:wrap; gap:0.4rem;">
+        {% for a in movie.actors %}
+          <span class="badge badge-dark">{{ a.name }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% if sessions %}
+<h2 class="section-title">🕐 Сеанси цього фільму</h2>
+<div style="display:flex; flex-direction:column; gap:0.7rem;">
+  {% for s in sessions %}
+  <div class="session-card">
+    <div class="session-time">{{ s.start_time.strftime('%H:%M') }}</div>
+    <div class="session-info">
+      <div class="title">{{ s.hall.name }}</div>
+      <div class="meta">
+        <span class="badge badge-dark">{{ s.hall.hall_type.value }}</span>
+        <span>{{ s.start_time.strftime('%d.%m.%Y') }}</span>
+      </div>
+    </div>
+    <div class="session-price">{{ s.price }} грн</div>
+    {% if s.status.value == 'scheduled' %}
+    <a href="/booking/{{ s.id }}" class="btn btn-primary">Купити</a>
+    {% else %}
+    <span class="btn" style="background:#2a2a2a; color:var(--muted); cursor:default;">Недоступно</span>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty">
+  <div class="empty-icon">📅</div>
+  <p>Сеансів для цього фільму поки немає.</p>
+</div>
+{% endif %}
+{% endblock %}

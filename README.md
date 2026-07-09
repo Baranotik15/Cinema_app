@@ -138,10 +138,25 @@ Swagger UI: `http://127.0.0.1:8000/docs`
 
 ## Seed Data
 
-Run seed script to populate the database with test data:
+> **WARNING:** `seed.py` **fully resets the database** — all existing data will be deleted.
+> Use in development only.
+
+The script performs the following steps:
+1. Prompts for confirmation (`y/N`)
+2. Deletes `sql_app.db`
+3. Runs migrations (`alembic upgrade head`)
+4. Inserts data directly via SQLAlchemy — no HTTP requests, server not required
+
+Sessions are generated relative to **today's date** and cover the next 10 days.
+
+> **Stop the server** before running seed — otherwise the DB file will be locked.
 
 ```bash
+# 1. Stop the server (Ctrl+C)
+# 2. Reset and populate the database
 python seed.py
+# 3. Start the server again
+uvicorn main:app --reload
 ```
 
 ---

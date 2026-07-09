@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}CinemaApp — Головна{% endblock %}
+
+{% block content %}
+<div class="hero">
+  <h1>Ласкаво просимо до <span>CinemaApp</span></h1>
+  <a href="/sessions" class="btn btn-primary">Розклад сеансів</a>
+</div>
+
+{% if movies %}
+<h2 class="section-title">🎬 Фільми в прокаті</h2>
+<div class="grid grid-4">
+  {% for movie in movies %}
+  <a href="/movies/{{ movie.id }}" style="text-decoration:none; color:inherit;">
+    <div class="card">
+      <div class="card-poster">
+        {% if movie.poster_url %}
+          <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" loading="lazy">
+        {% else %}
+          🎬
+        {% endif %}
+      </div>
+      <div class="card-body">
+        <div class="card-title">{{ movie.title }}</div>
+        <div class="card-meta">
+          <span>{{ movie.year or '—' }}</span>
+          {% if movie.rating %}
+            <span class="badge badge-yellow">★ {{ "%.1f"|format(movie.rating) }}</span>
+          {% endif %}
+          {% if movie.duration %}
+            <span>{{ movie.duration }} хв</span>
+          {% endif %}
+        </div>
+        {% if movie.genres %}
+        <div style="margin-top:0.5rem; display:flex; flex-wrap:wrap; gap:0.3rem;">
+          {% for g in movie.genres[:2] %}
+            <span class="badge badge-dark">{{ g.name }}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if sessions %}
+<h2 class="section-title" style="margin-top:2.5rem;">🕐 Найближчі сеанси</h2>
+<div style="display:flex; flex-direction:column; gap:0.7rem;">
+  {% for s in sessions %}
+  <div class="session-card">
+    <div class="session-time">{{ s.start_time.strftime('%H:%M') }}</div>
+    <div class="session-info">
+      <div class="title">{{ s.movie.title }}</div>
+      <div class="meta">
+        <span>{{ s.hall.name }}</span>
+        <span class="badge badge-dark">{{ s.hall.hall_type.value }}</span>
+        <span>{{ s.start_time.strftime('%d.%m.%Y') }}</span>
+      </div>
+    </div>
+    <div class="session-price">{{ s.price }} грн</div>
+    {% if s.status.value == 'scheduled' %}
+    <a href="/booking/{{ s.id }}" class="btn btn-primary" style="white-space:nowrap;">Купити</a>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if not movies and not sessions %}
+<div class="empty">
+  <div class="empty-icon">🎭</div>
+  <p>База даних порожня. Запустіть <code>python seed.py</code> для заповнення тестовими даними.</p>
+</div>
+{% endif %}
+{% endblock %}

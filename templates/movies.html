@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Фільми — CinemaApp{% endblock %}
+
+{% block content %}
+<h1 class="section-title" style="font-size:1.6rem; margin-bottom:1.5rem;">🎬 Всі фільми</h1>
+
+{% if movies %}
+<div class="grid grid-4">
+  {% for movie in movies %}
+  <a href="/movies/{{ movie.id }}" style="text-decoration:none; color:inherit;">
+    <div class="card">
+      <div class="card-poster">
+        {% if movie.poster_url %}
+          <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" loading="lazy">
+        {% else %}
+          🎬
+        {% endif %}
+      </div>
+      <div class="card-body">
+        <div class="card-title">{{ movie.title }}</div>
+        <div class="card-meta">
+          <span>{{ movie.year or '—' }}</span>
+          {% if movie.rating %}
+            <span class="badge badge-yellow">★ {{ "%.1f"|format(movie.rating) }}</span>
+          {% endif %}
+          {% if movie.duration %}
+            <span>{{ movie.duration }} хв</span>
+          {% endif %}
+        </div>
+        {% if movie.genres %}
+        <div style="margin-top:0.5rem; display:flex; flex-wrap:wrap; gap:0.3rem;">
+          {% for g in movie.genres %}
+            <span class="badge badge-dark">{{ g.name }}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% if movie.actors %}
+        <div style="margin-top:0.4rem; color:var(--muted); font-size:0.78rem;">
+          {{ movie.actors | map(attribute='name') | list | join(', ') | truncate(50) }}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty">
+  <div class="empty-icon">🎬</div>
+  <p>Фільмів ще немає. Запустіть <code>python seed.py</code>.</p>
+</div>
+{% endif %}
+{% endblock %}
