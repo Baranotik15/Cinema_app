@@ -74,6 +74,8 @@ async def update_booking(db: AsyncSession, booking_id: int, data: BookingUpdate)
             setattr(booking, field, value)
         if data.status == BookingStatus.confirmed:
             booking.paid_at = datetime.utcnow()
+        elif data.status == BookingStatus.cancelled:
+            booking.paid_at = None
         await db.commit()
         return await get_booking(db, booking_id)
     except (NotFoundError, DatabaseError):

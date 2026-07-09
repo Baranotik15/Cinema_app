@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, DateTime, ForeignKey, Enum
+from sqlalchemy import Column, Integer, DateTime, ForeignKey, Enum, UniqueConstraint
 from sqlalchemy.orm import relationship
 from app.database import Base
 from app.enums import BookingStatus
@@ -6,6 +6,7 @@ from app.enums import BookingStatus
 
 class Booking(Base):
     __tablename__ = "bookings"
+    __table_args__ = (UniqueConstraint("session_id", "seat_id"),)
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
